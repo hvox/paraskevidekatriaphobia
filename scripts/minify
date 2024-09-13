@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+import sys
+from pathlib import Path
+from typing import Any, Callable
+
+debug: Callable[..., None]
+noop: Any = lambda *args, **kwargs: None
+
+
+def main(script_name: str, *script_args: str):
+    path = Path(script_args[0])
+    lines = path.read_text().splitlines()
+    print("\n".join(minify_lines(path, lines)))
+
+
+def minify_lines(path, lines):
+    for line in lines:
+        line = line.split("//")[0].strip()
+        if not line:
+            continue
+        if line.endswith('")).text();'):
+            variable, value = line.split("await", 1)
+            yield variable + repr((path.parent / value.split('"')[1]).read_text()) + ";"
+        else:
+            yield line
+
+
+if __name__ == "__main__":
+    main(*sys.argv)

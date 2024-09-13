@@ -1,0 +1,14 @@
+#!/bin/sh
+
+rm font.sha256sum
+inotifywait -e close_write,moved_to,create -m . |
+while read -r directory events filename; do
+	if [ "$filename" = "font.py" ]; then
+		hash=`cat font.py | sha256sum`
+		old_hash=`cat font.sha256sum`
+		if [ "$hash" != "$old_hash" ]; then
+			python3 font.py
+			echo "$hash" > font.sha256sum
+		fi
+	fi
+done
