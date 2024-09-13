@@ -701,11 +701,11 @@ function cross(u, v) {
 }
 
 document.addEventListener('keydown', event =>
-	inputs["ESDFc".indexOf(event.code[3])] = 1
+	inputs["WASDc".indexOf(event.code[3])] = 1
 );
 
 document.addEventListener("keyup", event =>
-	inputs["ESDFc".indexOf(event.code[3])] = 0
+	inputs["WASDc".indexOf(event.code[3])] = 0
 );
 
 requestAnimationFrame(update);
