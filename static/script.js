@@ -5,6 +5,8 @@ const QUADS_FS = await(await fetch("quads.fs.glsl")).text();
 
 let sin = Math.sin;
 let cos = Math.cos;
+let abs = Math.abs;
+let clamp = (x, min, max) => Math.min(Math.max(x, min), max)
 let FPS = 0;
 let frame = 0;
 let averageFPS = 0;
@@ -290,6 +292,16 @@ function update(currentTimeNew) {
 	}
 	x += dx; y += dy;
 	if (dx != 0 || dy != 0) lastMoveTime = currentTime;
+
+	// Collision resolution
+	let collisionX = -8 + clamp(x + 8, -3, 3);
+	let collisionY = +4 + clamp(y - 4, -3, 3);
+	let distance = dist({ x: collisionX, y: collisionY }, { x, y });
+	if (distance < 1.5) {
+		let resolutionDirection = Math.atan2(y - collisionY, x - collisionX);
+		x += cos(resolutionDirection) * (1.5 - distance);
+		y += sin(resolutionDirection) * (1.5 - distance);
+	}
 
 	processChikenAI(currentTime);
 	processPortalAI(currentTime);
