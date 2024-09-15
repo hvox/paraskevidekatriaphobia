@@ -339,12 +339,13 @@ function update(currentTimeNew) {
 
 function processChikenAI(currentTime) {
 	let dx, dy;
-	if (dist({ x, y }, chicken) < 30 && currentTime - lastMoveTime < .5) {
+	let distance = dist({ x, y }, chicken);
+	if (distance < 15 && currentTime - lastMoveTime < .5) {
 		let angle = Math.atan2(chicken.y - y, chicken.x - x);
-		dx = 2 * speed * dt * cos(angle);
-		dy = 2 * speed * dt * sin(angle);
+		dx = (15 - distance) / 7.5 * speed * dt * cos(angle);
+		dy = (15 - distance) / 7.5 * speed * dt * sin(angle);
 	} else {
-		let angle = Math.atan2(10 * sin(currentTime / 2) - chicken.y, 10 * cos(currentTime / 2) - chicken.x);
+		let angle = Math.atan2(10 * sin(currentTime / 2) - 8 - chicken.y, 10 * cos(currentTime / 2) + 4 - chicken.x);
 		dx = .5 * speed * dt * cos(angle);
 		dy = .5 * speed * dt * sin(angle);
 	}
