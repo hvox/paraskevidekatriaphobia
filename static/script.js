@@ -16,6 +16,7 @@ let x = 0;
 let y = 0;
 let dx = 0;
 let dy = 0;
+let moveDirection = -0.785;
 let inputs = [0, 0, 0, 0, 0];
 let gl, w, h, canvas;
 let carriedObject;
@@ -286,9 +287,9 @@ function update(currentTimeNew) {
 	dx = -inputs[0] - inputs[1] + inputs[2] + inputs[3];
 	dy = +inputs[0] - inputs[1] - inputs[2] + inputs[3];
 	if (dx != 0 || dy != 0) {
-		let angle = Math.atan2(dy, dx);
-		dx = cos(angle) * dt * speed;
-		dy = sin(angle) * dt * speed;
+		moveDirection = Math.atan2(dy, dx);
+		dx = cos(moveDirection) * dt * speed;
+		dy = sin(moveDirection) * dt * speed;
 	}
 	x += dx; y += dy;
 	if (dx != 0 || dy != 0) lastMoveTime = currentTime;
@@ -421,7 +422,7 @@ function drawScene(t) {
 	const modelMatrix = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
 	gl.uniformMatrix4fv(gl.getUniformLocation(shaderProgram, "model"), 0, modelMatrix);
 
-	draw(MESHES[4], x + (dx != 0 ? Math.random() - .5 : 0) * .3, y, 1, (dy != 0 || dx != 0) ? Math.atan2(dy, dx) : -0.785);
+	draw(MESHES[4], x + (dx != 0 ? Math.random() - .5 : 0) * .3, y, 1, moveDirection);
 	for (let i = 0; i < 8; i++) {
 		let alpha = i / 4 * Math.PI + .5;
 		draw(MESHES[5], ...LEGS[i], 0, alpha);
