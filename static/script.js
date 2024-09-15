@@ -467,7 +467,7 @@ function drawScene(t) {
 
 
 	if (engineer.ai == null)
-		if ((engineer.x + 4) ** 2 + (engineer.y) ** 2 > 16) {
+		if ((engineer.x + 8) ** 2 + (engineer.y - 4) ** 2 > 80) {
 			if (engineer == carriedObject)
 				print("take me to the construction site");
 			else
