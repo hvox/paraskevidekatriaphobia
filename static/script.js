@@ -223,7 +223,7 @@ async function plotline() {
 	await new Promise(r => setTimeout(r, 2500));
 	engineerMessage = "I forgot which button turns off the sun\nmaybe that one?";
 	await new Promise(r => setTimeout(r, 1000));
-	x = y = 300;
+	x = y = 300; lastMoveTime = currentTime;
 	await new Promise(r => setTimeout(r, 15000));
 	engineer.ai = processEngineerAI;
 	engineer.y = y - 40; engineer.x = x;
