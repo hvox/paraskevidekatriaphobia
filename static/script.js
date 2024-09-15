@@ -471,7 +471,7 @@ function drawScene(t) {
 			if (engineer == carriedObject)
 				print("take me to the construction site");
 			else
-				print("I am smol\nplease carry me");
+				print("I am smol\nplease, carry me");
 		} else {
 			if (engineer == carriedObject) {
 				print("put me down on the ground!");
