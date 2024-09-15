@@ -458,7 +458,7 @@ function drawScene(t) {
 	gl.uniformMatrix4fv(gl.getUniformLocation(quadsShaderProgram, "view"), 0, viewMatrix);
 	gl.uniformMatrix4fv(gl.getUniformLocation(quadsShaderProgram, "projection"), 0, projectionMatrix);
 	gl.uniform3f(gl.getUniformLocation(quadsShaderProgram, "pivot"), engineer.x, engineer.y, (engineer.z ?? 0) + 2);
-	gl.uniform2f(gl.getUniformLocation(quadsShaderProgram, "ratio"), 16 / 9, 1);
+	gl.uniform2f(gl.getUniformLocation(quadsShaderProgram, "ratio"), w / h, 1);
 
 	// This code is not necessary since we have only one texture and it has been binded at creation time
 	// gl.activeTexture(gl.TEXTURE0);
