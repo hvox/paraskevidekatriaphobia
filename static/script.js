@@ -421,8 +421,6 @@ function updateShadowmap(t) {
 	for (let i = 0; i < 8; i++) {
 		let alpha = i / 4 * Math.PI + .5;
 		draw(MESHES[5], ...LEGS[i], 0, alpha);
-		if (dx == 0 && dy == 0 && currentTime - lastMoveTime > 1) continue;
-		if (dx != 0 || dy != 0) alpha += (random() - .5) / 2;
 	}
 
 	for (let entity of ENTITIES)
@@ -490,7 +488,6 @@ function drawScene(t) {
 	for (let i = 0; i < 8; i++) {
 		let alpha = i / 4 * Math.PI + .5;
 		draw(MESHES[5], ...LEGS[i], 0, alpha);
-		if (dx == 0 && dy == 0 && currentTime - lastMoveTime > 1) continue;
 		if (dx != 0 || dy != 0) alpha += (random() - .5) / 2;
 		if (frame / 2 % 4 == i % 4)
 			LEGS[i] = [x + 8 * dx * random() + 2 * cos(alpha), y + 8 * dy * random() + 2 * sin(alpha)];
