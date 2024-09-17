@@ -6,6 +6,7 @@ uniform mat4 view;
 uniform mat4 projection;
 
 uniform vec3 color;
+uniform vec2 shadowmap_position;
 
 varying vec3 pos;
 varying vec3 normal;

@@ -22,6 +22,7 @@ for name in [
     "basement",
     "drill",
     "cube",
+    "spider eyes",
 ]:
     mesh = meshes[name]
 

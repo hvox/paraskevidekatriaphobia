@@ -26,15 +26,16 @@ initializeWebGL();
 
 const MESHES = parseMeshes(await(await(await fetch("models.bin")).blob()).arrayBuffer());
 const FONT_SDF = generateFontSDF(await(await(await fetch("font.bin")).blob()).arrayBuffer());
+const [shadowmapTexture, shadowmapFramebuffer] = initializeShadowmap();
 const LEGS = Array.from(Array(8), _ => [0, 0]);
 const ENTITIES = [
 	{ name: "the cool engineer", mesh: [0, 1, 2, 3], x: -4, y: 0 },
 	{ name: "printer the pink one", mesh: [7], x: 10, y: 10 },
 	{ name: "freshly printed chicken Peppa", mesh: [6], x: 1e9, y: 5 },
 	{ name: "the orange portal", mesh: [8], x: 10, y: 15 },
-	{ name: "the blue portal", mesh: [12], x: 15, y: 13 },
+	{ name: "the blue portal", mesh: [13], x: 15, y: 13 },
 	{ name: "mystic box", mesh: [11], x: 5, y: 5, psi: 1 },
-	{ name: "printer the gray one", mesh: [13], x: 11, y: 7, psi: 2 },
+	{ name: "printer the gray one", mesh: [14], x: 11, y: 7, psi: 2 },
 ];
 const STATICS = [
 	{ name: "basement", mesh: [9], x: -8, y: 4 },
@@ -113,6 +114,9 @@ function initializeWebGL() {
 	}
 	console.log("WebGL:", gl);
 	// console.log("Colorspace:", gl.drawingBufferColorSpace.toUpperCase());
+
+	const ext = gl.getExtension('WEBGL_depth_texture');
+	if (!ext) alert("AAAAAAAAAAAAAAAAAA! I don't feel my WEBGL_depth_texture!");
 
 	gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -329,9 +333,12 @@ function update(currentTimeNew) {
 		counterFPS = 0;
 		averageFPS = 0;
 	}
+	frame++;
 
 	resizeCanvas();
-	gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+	let seed = randomSeed;
+	updateShadowmap(currentTime);
+	randomSeed = seed;
 	drawScene(currentTime);
 
 	requestAnimationFrame(update);
@@ -381,13 +388,64 @@ function processEngineerAI(currentTime) {
 		engineerGoesToPlayer = false;
 }
 
+function updateShadowmap(t) {
+	gl.bindFramebuffer(gl.FRAMEBUFFER, shadowmapFramebuffer);
+	gl.viewport(0, 0, 2048, 2048);
+	gl.enable(gl.CULL_FACE);
+	gl.cullFace(gl.FRONT);
+	gl.enable(gl.DEPTH_TEST);
+	gl.depthFunc(gl.LEQUAL);
+	gl.clearDepth(1.0);
+	gl.clearColor(0.0, 0.0, 0.0, 1.0);
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+	// World space to view space transformation matrix
+	const viewMatrix = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+
+	// View space to homogeneous space transformation matrix
+	const scale = 1 / 30;
+	const projectionMatrix = new Float32Array([scale, 0, 0, 0, 0, scale, 0, 0, -scale / 2, -scale / 2, -.1, 0, -scale * (x - 5), - scale * (y + 5), 0, 1]);
+
+	gl.useProgram(shaderProgram);
+
+	// Set uniforms
+	gl.uniformMatrix4fv(gl.getUniformLocation(shaderProgram, "view"), 0, viewMatrix);
+	gl.uniformMatrix4fv(gl.getUniformLocation(shaderProgram, "projection"), 0, projectionMatrix);
+
+	const modelMatrix = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+	gl.uniformMatrix4fv(gl.getUniformLocation(shaderProgram, "model"), 0, modelMatrix);
+
+	let shaking = ((dx != 0 | dy != 0) ? random() - .5 : 0) * .3;
+	draw(MESHES[4], x + shaking, y, 1, moveDirection);
+	for (let i = 0; i < 8; i++) {
+		let alpha = i / 4 * Math.PI + .5;
+		draw(MESHES[5], ...LEGS[i], 0, alpha);
+		if (dx == 0 && dy == 0 && currentTime - lastMoveTime > 1) continue;
+		if (dx != 0 || dy != 0) alpha += (random() - .5) / 2;
+	}
+
+	for (let entity of ENTITIES)
+		for (let meshId of entity.mesh)
+			draw(MESHES[meshId], entity.x + (entity == carriedObject) * shaking, entity.y, (entity.z ?? 0) + (entity == carriedObject) * 3, entity.psi ?? 0);
+	for (let i = 0; i < STATICS.length; i++) {
+		let entity = STATICS[i];
+		let x = i < 3 ? entity.x : -8 + 5 * cos(4 * currentTime + i ** 2);
+		let y = i < 3 ? entity.y : 4 + 5 * sin(4 * currentTime + i ** 2);
+		let z = i < 3 ? (i == 1) ? -1.5 - 1.5 * sin((4 + 2 * cos(currentTime / 5)) * currentTime) : 0 : 5 + 2 * sin(i);
+		let psi = i < 3 ? (entity.psi ?? 0) : (5 * currentTime * i);
+		for (let meshId of entity.mesh)
+			draw(MESHES[meshId], x, y, z, psi);
+	}
+}
+
 function drawScene(t) {
-	frame++;
-	gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
-	gl.clearDepth(1.0); // Clear everything
-	gl.enable(gl.DEPTH_TEST); // Enable depth testing
-	gl.depthFunc(gl.LEQUAL); // Near things obscure far things
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // Clear the canvas before we start drawing on it.
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+	gl.disable(gl.CULL_FACE);
+	gl.enable(gl.DEPTH_TEST);
+	gl.clearDepth(1.0);
+	gl.clearColor(0.0, 0.0, 0.0, 1.0);
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	// World space to view space transformation matrix
 	const viewMatrix = new Float32Array([0.7071067690849304, -0.5, 0.5, 0, 0.7071067690849304, 0.5, -0.5, 0, 0, 0.7071067690849304, 0.7071067690849304, 0, 0, 0, 0, 1]);
@@ -401,6 +459,9 @@ function drawScene(t) {
 	let { vertices, normals, faces } = land;
 
 	// Set uniforms
+	gl.bindTexture(gl.TEXTURE_2D, shadowmapTexture);
+	gl.uniform1i(gl.getUniformLocation(shaderProgram, "shadowmap"), 1);
+	gl.uniform2f(gl.getUniformLocation(shaderProgram, "shadowmap_position"), x - 5, y + 5, 0);
 	gl.uniform3f(gl.getUniformLocation(shaderProgram, "color"), .5, .5, 0);
 	gl.uniformMatrix4fv(gl.getUniformLocation(shaderProgram, "view"), 0, viewMatrix);
 	gl.uniformMatrix4fv(gl.getUniformLocation(shaderProgram, "projection"), 0, projectionMatrix);
@@ -422,14 +483,16 @@ function drawScene(t) {
 	const modelMatrix = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
 	gl.uniformMatrix4fv(gl.getUniformLocation(shaderProgram, "model"), 0, modelMatrix);
 
-	draw(MESHES[4], x + (dx != 0 ? Math.random() - .5 : 0) * .3, y, 1, moveDirection);
+	let shaking = ((dx != 0 | dy != 0) ? random() - .5 : 0) * .3;
+	draw(MESHES[4], x + shaking, y, 1, moveDirection);
+	draw(MESHES[12], x + shaking, y, 1, moveDirection);
 	for (let i = 0; i < 8; i++) {
 		let alpha = i / 4 * Math.PI + .5;
 		draw(MESHES[5], ...LEGS[i], 0, alpha);
 		if (dx == 0 && dy == 0 && currentTime - lastMoveTime > 1) continue;
-		if (dx != 0 || dy != 0) alpha += (Math.random() - .5) / 2;
+		if (dx != 0 || dy != 0) alpha += (random() - .5) / 2;
 		if (frame / 2 % 4 == i % 4)
-			LEGS[i] = [x + 8 * dx * Math.random() + 2 * cos(alpha), y + 8 * dy * Math.random() + 2 * sin(alpha)];
+			LEGS[i] = [x + 8 * dx * random() + 2 * cos(alpha), y + 8 * dy * random() + 2 * sin(alpha)];
 	}
 	// for (let i = 0; i < 100; i++) draw(MESHES[i % MESHES.length], (i % 10 - 4.5) * 3, (Math.floor(i / 10) - 4.5) * 3, .5 * Math.sin(t + i * 10), t + i / 10);
 
@@ -437,7 +500,7 @@ function drawScene(t) {
 	let object;
 	for (let entity of ENTITIES) {
 		for (let meshId of entity.mesh)
-			draw(MESHES[meshId], entity.x, entity.y, (entity.z ?? 0) + (entity == carriedObject) * 3, entity.psi ?? 0);
+			draw(MESHES[meshId], entity.x + (entity == carriedObject) * shaking, entity.y, (entity.z ?? 0) + (entity == carriedObject) * 3, entity.psi ?? 0);
 		let dist = (entity.x - x) ** 2 + (entity.y - y) ** 2;
 		if (dist < minDist) {
 			minDist = dist;
@@ -461,10 +524,9 @@ function drawScene(t) {
 	gl.uniform3f(gl.getUniformLocation(quadsShaderProgram, "pivot"), engineer.x, engineer.y, (engineer.z ?? 0) + 2 + 3 * (engineer == carriedObject));
 	gl.uniform2f(gl.getUniformLocation(quadsShaderProgram, "ratio"), w / h, 1);
 
-	// This code is not necessary since we have only one texture and it has been binded at creation time
 	// gl.activeTexture(gl.TEXTURE0);
-	// gl.bindTexture(gl.TEXTURE_2D, FONT_SDF);
-	// gl.uniform1i(gl.getUniformLocation(quadsShaderProgram, "sdf"), 0);
+	gl.bindTexture(gl.TEXTURE_2D, FONT_SDF);
+	gl.uniform1i(gl.getUniformLocation(quadsShaderProgram, "sdf"), 0);
 
 
 	if (engineer.ai == null)
@@ -652,6 +714,8 @@ function parseMeshes(blob) {
 	let meshes = [];
 	while (i != bytes.length) {
 		let color = [...bytes.slice(i, i += 3)].map(x => (x / 255) ** 2);
+		if (color[0] == color[1] && color[1] == color[2] && color[2] == 1.0)
+			color = [2, 2, 3];
 		let smooth = bytes[i++] == 1;
 		// color = [Math.random(), Math.random(), Math.random()];
 		let scale = .9 ** bytes[i++];
@@ -668,9 +732,9 @@ function parseMeshes(blob) {
 		meshes.push(createWebGLMesh(smooth ? shadeSmooth({ faces, vertices }) : shadeFlat({ faces, vertices }), color));
 	}
 	meshes.push({ ...meshes[8] });
+	meshes[meshes.length - 1].color = [0.5, 0.5, 1];
 	meshes.push({ ...meshes[7] });
-	meshes[12].color = [0.5, 0.5, 1];
-	meshes[13].color = [0.5, 0.5, 0.5];
+	meshes[meshes.length - 1].color = [0.5, 0.5, 0.5];
 	return meshes;
 }
 
@@ -689,6 +753,7 @@ function generateFontSDF(blob) {
 	let i = 0;
 	let bytes = new Uint8Array(blob);
 	let texture = gl.createTexture();
+	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 	let pixels = new Uint8Array(1 << 17).map(_ => 255);
@@ -707,6 +772,29 @@ function generateFontSDF(blob) {
 	}
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, 32, 64 * 64, 0, gl.ALPHA, gl.UNSIGNED_BYTE, pixels);
 	return texture;
+}
+
+function initializeShadowmap() {
+	const depthTexture = gl.createTexture();
+	gl.activeTexture(gl.TEXTURE1);
+	gl.bindTexture(gl.TEXTURE_2D, depthTexture);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, 2048, 2048, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+	// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+	const depthFramebuffer = gl.createFramebuffer();
+	gl.bindFramebuffer(gl.FRAMEBUFFER, depthFramebuffer);
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthTexture, 0);
+	return [depthTexture, depthFramebuffer];
+}
+
+let randomTable = new Float32Array(Array.from(Array(1024), _ => Math.random()));
+let randomSeed = 0;
+function random() {
+	randomSeed = (randomSeed + 1) & 1023;
+	return randomTable[randomSeed];
 }
 
 function sub(u, v) {
