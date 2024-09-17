@@ -17,7 +17,7 @@ let y = 0;
 let dx = 0;
 let dy = 0;
 let moveDirection = -0.785;
-let inputs = [0, 0, 0, 0, 0];
+let inputs = [0, 0, 0, 0, 0, 0];
 let gl, w, h, canvas;
 let carriedObject;
 let eventTriggers = [];
@@ -275,6 +275,7 @@ let dt = 0;
 let speed = 8;
 let currentTime = 0;
 function update(currentTimeNew) {
+	speed = 8 + 12 * inputs[5];
 	currentTime = currentTimeNew / 1000;
 	dt = currentTime - previousFrameTime;
 	previousFrameTime = currentTime;
@@ -806,11 +807,11 @@ function cross(u, v) {
 }
 
 document.addEventListener('keydown', event =>
-	inputs["WASDc".indexOf(event.code[3])] = 1
+	inputs["WASDcf".indexOf(event.code[3])] = 1
 );
 
 document.addEventListener("keyup", event =>
-	inputs["WASDc".indexOf(event.code[3])] = 0
+	inputs["WASDcf".indexOf(event.code[3])] = 0
 );
 
 requestAnimationFrame(update);
