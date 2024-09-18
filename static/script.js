@@ -6,7 +6,7 @@ const QUADS_FS = await(await fetch("quads.fs.glsl")).text();
 let sin = Math.sin;
 let cos = Math.cos;
 let abs = Math.abs;
-let clamp = (x, min, max) => Math.min(Math.max(x, min), max)
+let clamp = (x, min, max) => Math.min(Math.max(x, min), max);
 let FPS = 0;
 let frame = 0;
 let averageFPS = 0;
@@ -342,7 +342,6 @@ function update(currentTimeNew) {
 	drawScene(currentTime);
 
 	requestAnimationFrame(update);
-	// setTimeout(update, 0.0001);
 }
 
 function processChikenAI(currentTime) {
