@@ -275,7 +275,6 @@ let dt = 0;
 let speed = 8;
 let currentTime = 0;
 function update(currentTimeNew) {
-	speed = 8 + 12 * inputs[5];
 	currentTime = currentTimeNew / 1000;
 	dt = currentTime - previousFrameTime;
 	previousFrameTime = currentTime;
@@ -293,8 +292,8 @@ function update(currentTimeNew) {
 	dy = +inputs[0] - inputs[1] - inputs[2] + inputs[3];
 	if (dx != 0 || dy != 0) {
 		moveDirection = Math.atan2(dy, dx);
-		dx = cos(moveDirection) * dt * speed;
-		dy = sin(moveDirection) * dt * speed;
+		dx = cos(moveDirection) * dt * (speed + 12 * inputs[5]);
+		dy = sin(moveDirection) * dt * (speed + 12 * inputs[5]);
 	}
 	x += dx; y += dy;
 	if (dx != 0 || dy != 0) lastMoveTime = currentTime;
