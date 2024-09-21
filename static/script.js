@@ -474,7 +474,8 @@ function drawScene(t) {
 
 	for (let landX = (x / 74 | 0) - 1; landX <= (x / 74 | 0) + 1; landX++)
 		for (let landY = (y / 74 | 0) - 1; landY <= (y / 74 | 0) + 1; landY++) {
-			land.color = landY + landX < 3 ? [0, .3, 0] : [.1, .0, 0];
+			let alpha = clamp((abs(landX) + abs(landY)) / 7, 0, 1)
+			land.color = [.1 * alpha, .3 * (1 - alpha), 0];
 			draw(land, landX * 74, landY * 74, 0, 1.57);
 		}
 	const modelMatrix = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
