@@ -18,6 +18,7 @@ let dx = 0;
 let dy = 0;
 let moveDirection = -0.785;
 let inputs = [0, 0, 0, 0, 0, 0];
+let inputsPrev = [0, 0, 0, 0, 0, 0];
 let gl, w, h, canvas;
 let carriedObject;
 let eventTriggers = [];
@@ -279,7 +280,7 @@ function update(currentTimeNew) {
 	dt = currentTime - previousFrameTime;
 	previousFrameTime = currentTime;
 
-	if (currentTime - lastPickupTime > .2 && carriedObject != null && inputs[4] == 1) {
+	if (currentTime - lastPickupTime > .2 && carriedObject != null && inputs[4] - inputsPrev[4] == 1) {
 		lastPickupTime = currentTime;
 		if (carriedObject != engineer) {
 			carriedObject.x += 1;
@@ -341,6 +342,7 @@ function update(currentTimeNew) {
 	randomSeed = seed;
 	drawScene(currentTime);
 
+	inputsPrev = [...inputs];
 	requestAnimationFrame(update);
 }
 
@@ -548,7 +550,7 @@ function drawScene(t) {
 		gl.uniform3f(gl.getUniformLocation(quadsShaderProgram, "pivot"), object.x, object.y, 2);
 		if (carriedObject != object && object != engineer)
 			print(object.name);
-		if (t - lastPickupTime > .2 && carriedObject == null && inputs[4] == 1) {
+		if (t - lastPickupTime > .2 && carriedObject == null && inputs[4] - inputsPrev[4] == 1) {
 			lastPickupTime = t;
 			carriedObject = object;
 		}
