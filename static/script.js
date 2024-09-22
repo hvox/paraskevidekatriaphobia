@@ -12,11 +12,11 @@ let frame = 0;
 let averageFPS = 0;
 let counterFPS = 0;
 
-let x = 0;
+let x = 2;
 let y = 0;
 let dx = 0;
 let dy = 0;
-let moveDirection = -0.785;
+let moveDirection = 3.4;
 let inputs = [0, 0, 0, 0, 0, 0];
 let inputsPrev = [0, 0, 0, 0, 0, 0];
 let gl, w, h, canvas;
