@@ -41,7 +41,8 @@ FONT = {
     ",": "446452",
     "P": "04040F 0FEFEC ECE909",
     "'": "4C6C5A",
-    # "aa": "A40408 080CAC ECE8E4" ,
+    "D": "04040F 44E4E9 E9EF4F",
+    "W": "0F2056 96C0EF 567B96",
 }
 
 
@@ -83,7 +84,7 @@ for character in [list(FONT.values())[-1]]:
 
 
 binary = bytearray()
-letters = "abcdefghijklmnopqrstuvwxyz.!HI,P'"
+letters = "abcdefghijklmnopqrstuvwxyz.!DHIPW,'"
 for char in letters + "?" * (64 - len(letters)):
     beziers = FONT.get(char, FONT["?"]).split()
     while len(beziers) < 3:

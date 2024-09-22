@@ -590,7 +590,7 @@ function print(text) {
 		for (let i = 0; i < line.length; i++) {
 			let x = x0 + i;
 			// let z = line.charCodeAt(i) % 32;
-			let z = " abcdefghijklmnopqrstuvwxyz.!HI,P'".indexOf(line[i]);
+			let z = " abcdefghijklmnopqrstuvwxyz.!DHIPW,'".indexOf(line[i]);
 			vertices.push(x, y, x + 1, y, x + 1, y + 1, x + 1, y + 1, x, y + 1, x, y);
 			uvs.push(0, z, 1, z, 1, z + 1, 1, z + 1, 0, z + 1, 0, z);
 		}
