@@ -1,6 +1,6 @@
 # Paraskevidekatriaphobia
 
-![logo](logo.png)
+![cover](cover.png)
 
 I made this cute little game for [js13k](https://js13kgames.com/2024/).
 The game is about helping little engineer to build a factory.
