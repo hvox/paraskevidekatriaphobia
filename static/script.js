@@ -809,15 +809,19 @@ function cross(u, v) {
 }
 
 document.addEventListener('keydown', event => {
-	let i = "WASDcfQERFZXCVpeoi".indexOf(event.code.replace("Arr", "")[3]);
-	inputs[i % 14] = 1;
-	if (i > -1) event.preventDefault();
+	let i = ["KeyW", "KeyA", "KeyS", "KeyD", "Space", "ShiftLeft",
+		"ArrowUp", "ArrowLeft", "ArrowDown", "ArrowRight", 0, "ShiftRight"]
+		.indexOf(event.code);
+	inputs[i % 6] = 1;
+	if (i > -1 || event.code.startsWith("Key")) event.preventDefault();
 });
 
 document.addEventListener("keyup", event => {
-	let i = "WASDcfQERFZXCVpeoi".indexOf(event.code.replace("Arr", "")[3]);
-	inputs[i % 14] = 0;
-	if (i > -1) event.preventDefault();
+	let i = ["KeyW", "KeyA", "KeyS", "KeyD", "Space", "ShiftLeft",
+		"ArrowUp", "ArrowLeft", "ArrowDown", "ArrowRight", 0, "ShiftRight"]
+		.indexOf(event.code);
+	inputs[i % 6] = 0;
+	if (i > -1 || event.code.startsWith("Key")) event.preventDefault();
 });
 
 requestAnimationFrame(update);
