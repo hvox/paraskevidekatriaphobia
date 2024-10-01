@@ -809,14 +809,14 @@ function cross(u, v) {
 }
 
 document.addEventListener('keydown', event => {
-	let i = "WASDcfQERFZXCV".indexOf(event.code.replace("Arr", "")[3]);
-	inputs[i] = 1;
+	let i = "WASDcfQERFZXCVpeoi".indexOf(event.code.replace("Arr", "")[3]);
+	inputs[i % 14] = 1;
 	if (i > -1) event.preventDefault();
 });
 
 document.addEventListener("keyup", event => {
-	let i = "WASDcfQERFZXCV".indexOf(event.code.replace("Arr", "")[3]);
-	inputs[i] = 0;
+	let i = "WASDcfQERFZXCVpeoi".indexOf(event.code.replace("Arr", "")[3]);
+	inputs[i % 14] = 0;
 	if (i > -1) event.preventDefault();
 });
 
