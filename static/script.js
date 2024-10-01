@@ -808,13 +808,17 @@ function cross(u, v) {
 	return [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
 }
 
-document.addEventListener('keydown', event =>
-	inputs["WASDcf".indexOf(event.code[3])] = 1
-);
+document.addEventListener('keydown', event => {
+	let i = "WASDcfQERFZXCV".indexOf(event.code.replace("Arr", "")[3]);
+	inputs[i] = 1;
+	if (i > -1) event.preventDefault();
+});
 
-document.addEventListener("keyup", event =>
-	inputs["WASDcf".indexOf(event.code[3])] = 0
-);
+document.addEventListener("keyup", event => {
+	let i = "WASDcfQERFZXCV".indexOf(event.code.replace("Arr", "")[3]);
+	inputs[i] = 0;
+	if (i > -1) event.preventDefault();
+});
 
 requestAnimationFrame(update);
 plotline();
