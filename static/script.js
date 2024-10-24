@@ -232,7 +232,7 @@ async function plotline() {
 	await new Promise(r => setTimeout(r, 2500));
 	engineerMessage = "I forgot which button turns off the sun\nmaybe that one?";
 	await new Promise(r => setTimeout(r, 1000));
-	x = y = 300; lastMoveTime = currentTime;
+	x = y = 400; lastMoveTime = currentTime;
 	await new Promise(r => setTimeout(r, 15000));
 	engineer.ai = processEngineerAI;
 	engineer.y = y - 40; engineer.x = x;
@@ -450,6 +450,9 @@ function drawScene(t) {
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+	// Make scene darker when away from the engineer
+	let colorCorrection = .4 + dist({x, y}) / 555 * 1.6;
+
 	// World space to view space transformation matrix
 	const viewMatrix = new Float32Array([0.7071067690849304, -0.5, 0.5, 0, 0.7071067690849304, 0.5, -0.5, 0, 0, 0.7071067690849304, 0.7071067690849304, 0, 0, 0, 0, 1]);
 	for (let i = 0; i < 4; i++)
@@ -468,6 +471,7 @@ function drawScene(t) {
 	gl.uniform3f(gl.getUniformLocation(shaderProgram, "color"), .5, .5, 0);
 	gl.uniformMatrix4fv(gl.getUniformLocation(shaderProgram, "view"), 0, viewMatrix);
 	gl.uniformMatrix4fv(gl.getUniformLocation(shaderProgram, "projection"), 0, projectionMatrix);
+	gl.uniform3f(gl.getUniformLocation(shaderProgram, "color_correction"), colorCorrection, colorCorrection, colorCorrection);
 
 	// Bind things
 	gl.bindBuffer(gl.ARRAY_BUFFER, (vertices));
@@ -481,7 +485,7 @@ function drawScene(t) {
 	for (let landX = (x / 74 | 0) - 1; landX <= (x / 74 | 0) + 1; landX++)
 		for (let landY = (y / 74 | 0) - 1; landY <= (y / 74 | 0) + 1; landY++) {
 			let alpha = clamp((abs(landX) + abs(landY)) / 7, 0, 1)
-			land.color = [.1 * alpha, .3 * (1 - alpha), 0];
+			land.color = [.1 * alpha, .1 + .2 * (1 - alpha), 0];
 			draw(land, landX * 74, landY * 74, 0, 1.57);
 		}
 	const modelMatrix = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
